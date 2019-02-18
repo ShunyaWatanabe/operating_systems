@@ -1,0 +1,16 @@
+pwd
+pwd
+pwd
+pwd
+pwd
+pwd
+history
+exit
+exit
+history
+pwd
+cd dir
+pwd
+cd ../
+pwd
+exit
