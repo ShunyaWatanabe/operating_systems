@@ -9,8 +9,14 @@ exit
 exit
 history
 pwd
-cd dir
+cd
+dir
 pwd
-cd ../
+cd
+../
 pwd
+exit
+exit
+history
+history
 exit
