@@ -50,7 +50,7 @@ void do_cd(vector<string> words){
 void do_exit(list<string> history){
 	if (history.size() > 0){
 		ofstream file;
-		file.open("history.txt");
+		file.open("history.txt"); // TODO truncate the original text file
 		if (file.is_open()){
 			list<string>::iterator itr;
 			for (itr = history.begin(); itr != history.end(); ++itr){
@@ -59,5 +59,6 @@ void do_exit(list<string> history){
 			file.close();
 		}	
 	}
+	exit(0);
 }
 
