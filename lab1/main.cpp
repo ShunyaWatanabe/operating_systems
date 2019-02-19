@@ -16,8 +16,7 @@ void get_words(vector<string>& words, string input){
 list<string> make_history(ifstream& file){
 	list<string> history;
 	string entry;
-	while (!file.eof()){
-		file >> entry;
+	while (getline(file, entry)){
 		history.push_back(entry);
 	}
 	return history;
@@ -32,7 +31,7 @@ void append_history(list<string>& history, string input){
 
 string search(list<string> history, int num){
 	list<string>::iterator it = history.begin();
-	advance(it, num-1); 
+	advance(it, num-1);
 	return *it;
 }
 
@@ -43,6 +42,29 @@ void get_actual_paths(vector<string>&actual_paths, string paths){ // almost iden
 	while (token != NULL){
 		actual_paths.push_back(token);
 		token = strtok(NULL, ":");
+	}
+}
+
+void do_external(vector<string> words, string path){
+	// check external commands
+	vector<string> actual_paths;
+	get_actual_paths(actual_paths, path);
+	bool is_found = false;
+	for (vector<string>::iterator itr = actual_paths.begin(); itr != actual_paths.end(); itr++){
+		const char* path = (*itr).append("/").append(words.at(0)).c_str();
+		if (access(path, F_OK) == 0){
+			// success
+			cout << words.at(0) << " is an external command (" <<	*itr << ")" << endl;
+			cout << "command arguments:" << endl;
+			for (vector<string>::iterator itr = words.begin()+1; itr != words.end(); itr++){
+				cout << *itr << endl;
+			}
+			is_found = true;
+			break;
+		}
+	}	
+	if (!is_found){
+		cout<<"command not found"<<endl;	
 	}
 }
 
@@ -86,7 +108,7 @@ int main(){
 			}
 		}
 
-		history.push_back(input);
+		append_history(history, input);
 
 		vector<string> words;
 		get_words(words, input);
@@ -103,31 +125,7 @@ int main(){
 		else if (word1 == "pwd") do_pwd();
 		else if (word1 == "export") do_export(words, paths);
 		else if (word1 == "cd") do_cd(words);
-		else {
-			// check external commands
-			try {
-				vector<string> actual_paths;
-				get_actual_paths(actual_paths, paths.at("PATH"));
-				bool is_found = false;
-				for (vector<string>::iterator itr = actual_paths.begin(); itr != actual_paths.end(); itr++){
-					const char* path = (*itr).append("/").append(word1).c_str();
-					if (access(path, F_OK) == 0){
-						// success
-						cout << word1 << " is an external command (" <<	*itr << ")" << endl;
-						cout << "command arguments:" << endl;
-						is_found = true;
-						break;
-					}
-				}	
-				if (!is_found){
-					cout<<"command not found"<<endl;	
-				}
-			}
-			catch (...){
-				cout << "error" << endl;
-			}	
-		}
-		append_history(history, input);
+		else do_external(words, paths.at("PATH"));
 	}
 
 	return 0;
