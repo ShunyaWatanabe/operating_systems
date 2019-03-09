@@ -1,5 +1,7 @@
 #include "main.h"
 #include "built_in.h" // functions for built in commands
+#include "external.h"
+#include "history.h"
 using namespace std;
 
 void get_words(vector<string>& words, string input){
@@ -13,89 +15,10 @@ void get_words(vector<string>& words, string input){
 	}
 }
 
-list<string> make_history(ifstream& file){
-	list<string> history;
-	string entry;
-	while (getline(file, entry)){
-		history.push_back(entry);
-	}
-	return history;
-}
-
-void append_history(list<string>& history, string input){
-	if (history.size() == 100){
-		history.pop_front();
-	}
-	history.push_back(input);
-}
-
-string search(list<string> history, int num){
-	list<string>::iterator it = history.begin();
-	advance(it, num-1);
-	return *it;
-}
-
-void get_actual_paths(vector<string>&actual_paths, string paths){ // almost identical to get_words()
-	char char_array[PATH_SIZE];
-	strcpy(char_array, paths.c_str());
-	char* token = strtok(char_array, ":");
-	while (token != NULL){
-		actual_paths.push_back(token);
-		token = strtok(NULL, ":");
-	}
-}
-
-// taken from this url to convert string vector to char pointer array
-//https://stackoverflow.com/questions/7048888/stdvectorstdstring-to-char-array
-char* convert(const string &s){
-	char *pc = new char[s.size()+1];
-	strcpy(pc, s.c_str());
-	return pc;
-}
-
-void do_external(vector<string> words, string path){
-	// check external commands
-	vector<string> actual_paths;
-	get_actual_paths(actual_paths, path);
-	vector<char*> char_array;
-	transform(words.begin(), words.end(), back_inserter(char_array), convert);
-	char_array.push_back((char*) 0);	
-
-	bool is_found = false;
-	for (vector<string>::iterator itr = actual_paths.begin(); itr != actual_paths.end(); itr++){
-		const char* path = (*itr).append("/").append(words.at(0)).c_str();
-		if (access(path, F_OK) == 0){
-			// success
-			// execute a file
-			int pid=fork();
-			int status;
-			if (pid == 0){
-				if (execv(path, &char_array[0]) == -1){
-					cout << "Error in execv(): " << errno << ": " << strerror(errno)  << endl;				
-				}	
-				exit(0);
-			}
-			wait(&status); // wait for child process to end
-			is_found=true;
-			break;
-		}
-	}	
-	if (!is_found){
-		cout<<"command not found"<<endl;	
-	}
-}
-
-
 int main(){
 
 	// initializatoin process
-	ifstream file;
-	file.open("history.txt");
-	list<string> history;
-	if (file.is_open()){
-		history = make_history(file);
-		file.close();
-	}
+	list<string> history = make_history();
 
 	map<string, string> paths;
 	paths.insert({"PATH", ""});
@@ -109,20 +32,9 @@ int main(){
 
 		// get commands from history if given '!'
 		if (input.at(0) == '!'){
-			input.erase(0, 1);
-			try {
-				int num = stoi(input);
-				if (num <= 100 && num > 0){
-					input = search(history, num);
-				} 
-			}
-			catch(invalid_argument& e){
-				// if no conversion could be performed
+			if (execute_history(history, &input) == -1){
+				cout<<"error"<<endl;
 				continue;
- 			}
-			catch(...){
-				cout<<"error"<<endl; // maybe introduce better error message
-				do_exit(history);
 			}
 		}
 
