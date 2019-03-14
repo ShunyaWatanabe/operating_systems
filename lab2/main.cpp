@@ -15,6 +15,16 @@ void get_words(vector<string>& words, string input){
 	}
 }
 
+void perform_action(string word, list<string>history, vector<string> words, map<string, string> paths){
+	// perform action
+	if (word == "exit") do_exit(history);
+	else if (word == "history") do_history(history);
+	else if (word == "pwd") do_pwd();
+	else if (word == "export") do_export(words, paths);
+	else if (word == "cd") do_cd(words);
+	else do_external(words, paths.at("PATH"));
+}
+
 int main(){
 
 	// initializatoin process
@@ -40,22 +50,16 @@ int main(){
 
 		append_history(history, input);
 
+		
+		
 		vector<string> words;
 		get_words(words, input);
-		// simple error check
 		if (words.size() == 0){
 			continue;
 		}
 
-		string word1 = words.at(0);
+		perform_action(words.at(0), history, words, paths);
 
-		// perform action
-		if (word1 == "exit") do_exit(history);
-		else if (word1 == "history") do_history(history);
-		else if (word1 == "pwd") do_pwd();
-		else if (word1 == "export") do_export(words, paths);
-		else if (word1 == "cd") do_cd(words);
-		else do_external(words, paths.at("PATH"));
 	}
 
 	return 0;
