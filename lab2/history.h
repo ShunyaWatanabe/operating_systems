@@ -13,4 +13,4 @@
 std::list<std::string> make_history();
 void append_history(std::list<std::string>& history, std::string input);
 std::string search(std::list<std::string> history, int num);
-int execute_history(std::list<std::string> history, std::string* input);
+void execute_history(std::list<std::string> history, std::string* input);

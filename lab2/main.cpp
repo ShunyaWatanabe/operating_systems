@@ -15,7 +15,7 @@ void get_words(vector<string>& words, string input){
 	}
 }
 
-void perform_action(string word, list<string>history, vector<string> words, map<string, string> paths){
+void perform_action(string word, list<string>&history, vector<string>& words, map<string, string> &paths){
 	// perform action
 	if (word == "exit") do_exit(history);
 	else if (word == "history") do_history(history);
@@ -39,28 +39,15 @@ int main(){
 	while (1){
 		cout << ">>";
 		getline(cin, input);
-
-		// get commands from history if given '!'
-		if (input.at(0) == '!'){
-			if (execute_history(history, &input) == -1){
-				cout<<"error"<<endl;
-				continue;
-			}
-		}
-
+		execute_history(history, &input);
 		append_history(history, input);
-
-		
 		
 		vector<string> words;
 		get_words(words, input);
 		if (words.size() == 0){
 			continue;
 		}
-
 		perform_action(words.at(0), history, words, paths);
-
 	}
-
 	return 0;
 }
