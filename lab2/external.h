@@ -15,5 +15,4 @@
 void get_actual_paths(std::vector<std::string>&actual_paths, std::string paths);
 char* convert(const std::string &s);
 void do_external(std::vector<std::string> words, std::string path);
-void do_external2(std::vector<std::string> words, std::string path);
 
