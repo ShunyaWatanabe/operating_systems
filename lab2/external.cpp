@@ -42,7 +42,7 @@ void do_external(vector<string> words, string path){
 				}	
 				exit(0);
 			}
-			wait(&status); // wait for child process to end
+			waitpid(pid, &status, 0); // wait for child process to end
 			is_found=true;
 			break;
 		}
@@ -51,3 +51,4 @@ void do_external(vector<string> words, string path){
 		cout<<"command not found"<<endl;	
 	}
 }
+
