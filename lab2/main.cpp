@@ -92,6 +92,13 @@ void perform(string input, list<string>history, map<string, string>& paths){
 	}
 }
 
+void update_pwd(map<string, string>& paths){
+	char buff[100];
+	getcwd(buff, 100);
+	string pwd = buff;
+	paths.insert({"PWD", pwd});
+}
+
 int main(){
 
 	// initializatoin process
@@ -108,11 +115,25 @@ int main(){
 		getline(cin, input);
 		execute_history(history, &input);
 		append_history(history, input);
+		update_pwd(paths);
+		while (input.find("$") != -1){
+			int start = input.find("$"); 
+			int end = input.find(" ", start);
+			if (end == -1){
+				cout<<"reached end"<<endl;
+				end = input.length()-1;
+			} else {
+				end -= 1;
+			}
+			cout<<start<<", "<<end<<endl;
+			string key = input.substr(start+1, end);
+			string val = paths.at(key);
+			cout<<key<<", "<<val<<endl;
+			input.replace(start, end-start+1, val);
+		}
 
-
-		// output redirection 
+		// output redirection TODO if 2> write from err instead 
 		if (input.find(">") != -1){
-			cout<<"detedcted >"<<endl;
 			vector<string> IOs = split(input, ">");
 			if (IOs.size() != 2){
 				cerr<<"wrong format for operator >."<<endl;
@@ -121,8 +142,6 @@ int main(){
 			string input = IOs.at(0);
 			string filename = IOs.at(1);
 			filename.erase(remove(filename.begin(), filename.end(), ' '), filename.end());
-			cout <<"input: "<< input << endl;
-			cout <<"filename: "<< filename << endl;
 			int pipefd[2];
 			if (pipe(pipefd) == -1){
 				cerr<<"error piping"<<endl;
@@ -154,11 +173,11 @@ int main(){
 					wait(NULL);
 
 					// write to file
-					char data[255];
-					memset(data, 0, 255);
+					char data[FILE_SIZE];
+					memset(data, 0, FILE_SIZE);
 					ofstream file;
 					file.open(filename);
-					read(STDIN_FILENO, data, 255);
+					read(STDIN_FILENO, data, FILE_SIZE);
 					file << data;
 					file.close();
 					exit(0);
@@ -172,12 +191,24 @@ int main(){
 		}
 		// input redirection
 		else if (input.find("<") != -1){
-			cout<<"detedcted <"<<endl;
-
+			vector<string> IOs = split(input, "<");
+			if (IOs.size() != 2){
+				cerr<<"wrong format for operator >."<<endl;
+				continue;
+			}
+			string input = IOs.at(0);
+			string filename = IOs.at(1);
+			filename.erase(remove(filename.begin(), filename.end(), ' '), filename.end());
+			ifstream file;
+			file.open(filename);
+			char buffer[FILE_SIZE];
+			file.read(buffer, FILE_SIZE);
+			write(STDIN_FILENO, buffer, FILE_SIZE);
+			cout<<endl;
+			file.close();
 		}
 		// no IO redirection
 		else {
-			cout<<"nothing detedcted"<<endl;
 			perform(input, history, paths);	
 		}
 	}

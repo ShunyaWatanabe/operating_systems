@@ -17,7 +17,7 @@
 
 #define PATH_SIZE 100 // 100 is an arbitrary number
 #define F_OK 0 // file exists
-
+#define FILE_SIZE 2048
 std::vector<std::string> get_words(std::string input, const char* delimitter);
 
 std::list<std::string> make_history(std::fstream file);
