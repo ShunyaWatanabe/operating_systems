@@ -177,8 +177,10 @@ int main(){
 					memset(data, 0, FILE_SIZE);
 					ofstream file;
 					file.open(filename);
-					read(STDIN_FILENO, data, FILE_SIZE);
-					file << data;
+					while(read(STDIN_FILENO, data, FILE_SIZE) != 0){
+						file << data;
+						memset(data, 0, FILE_SIZE);
+					}
 					file.close();
 					exit(0);
 				}
@@ -196,16 +198,24 @@ int main(){
 				cerr<<"wrong format for operator >."<<endl;
 				continue;
 			}
+
 			string input = IOs.at(0);
 			string filename = IOs.at(1);
 			filename.erase(remove(filename.begin(), filename.end(), ' '), filename.end());
-			ifstream file;
-			file.open(filename);
-			char buffer[FILE_SIZE];
-			file.read(buffer, FILE_SIZE);
-			write(STDIN_FILENO, buffer, FILE_SIZE);
-			cout<<endl;
-			file.close();
+			int pid = fork();
+			if (pid < 0){
+				cerr<<"error forking" << endl;
+			}
+			if (pid == 0){
+				int fd = open(filename.c_str(), O_RDONLY);
+				dup2(fd, STDIN_FILENO);
+				close(fd);
+				perform(input, history, paths);
+				exit(0);
+			}
+			else {
+				wait(NULL);
+			}
 		}
 		// no IO redirection
 		else {

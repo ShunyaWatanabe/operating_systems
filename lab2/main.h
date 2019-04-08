@@ -14,6 +14,8 @@
 #include <stdexcept>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #define PATH_SIZE 100 // 100 is an arbitrary number
 #define F_OK 0 // file exists
