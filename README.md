@@ -1,5 +1,4 @@
 # operating_systems
-hw repo
 
 lab1: create a simple shell that has built-in commands
 
