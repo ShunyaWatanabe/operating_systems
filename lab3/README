@@ -1,0 +1,50 @@
+There are 4 players: coordinator, cashier, client, and server.
+
+coordinator
+he creates the structure that is shared as the shared segment. he also creates the cashiers and a server.
+he initializes the variables in the structure and also prints all the data at the end.
+
+cashier
+cashier takes care of customers when they come in. he asks for what food the customers want and writes that to the database.
+
+client
+client comes in to the restaurant, lines up if the queue is not long, orders and pays, waits for food and calls up the server to get food, eats and leaves.
+
+server
+when client calls, he comes. otherwise he is just waiting (sem_wait).
+
+
+There are a bunch of semaphores that are being used. Most of them make sure when the variables are being changed or checked, they ensure they are being changed by one player.
+Some semaphores however are used for atomicity, meaning that one process is done by just one player. This is to ensure the order of executions to be uniform and make sure things happen in the correct order.
+
+
+The procedure
+1. coordinator initializes shared segment and variables that are shared in the shared segment. 
+	the variables include semaphores and other variables to be shared or pass to each other.
+2. coordinator creates cashiers depending on the max number of cashiers.
+	cashiers serveTime and breakTime are chosen randomly.
+3. coordinator creates one server.
+4. clients are created through ./script executable. 
+	it asks shmid as an input. it creates 100 customers. every customer is produced with up to 1 second delay.
+5. clients start lining up. 
+	if number exceeds 50, the new clients will leave.
+6. cashier were taking break but as they see the queue, they start serving.
+7. cashier client interaction happens only once at a time. 
+	this is to ensure the variables being exchanged stays there during the whole process.
+	also, we don't know the number of cashiers at the beginning yet, so we can't have interactions happening at the same time.
+8. cashier and client sleeps for a random second up to serveTime as soon as their interaction finishes.
+	the variables being exchanged are client ID and item ID etc.
+	this mimics the actual interaction. the computer is really fast at computing, but we make them sleep so that it reflects the real life.
+9. cashier goes on to serve another client, client waits for server to serve.
+10. after a random serveTime (between item's minTime and maxTime), client calls server to serve for him.
+11. server was waiting until he was called by the client.
+	it is assumed that the food is getting prepared after the order is made. 
+	since the kitchen can make multiple dishes at the same time, i decided to not make server wait one serveTime at a time because that doesn't make sense.
+11. client waits for eatTime, then leaves. server waits for another client to call him.
+12. if client sees that there is noone waiting in the line, he assumes that the shop is closing.
+	we set the isClosed boolean variable through client.
+13. for every loop cashier and server sees if it is closed. if he sees isclosed to be true, he goes home.
+	these process die after detaching the shared segment.
+14. the coordinator realizes all the cashiers and server processes die.
+15. coordinator starts collecting statistics from the database, and outputs useful information to result.txt.
+
