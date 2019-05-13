@@ -8,5 +8,5 @@
 #include <vector>
 #include <fcntl.h>
 #include <unistd.h>
-
+#include <bitset>
 void meta(char* file, char* path);

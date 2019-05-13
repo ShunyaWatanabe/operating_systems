@@ -22,25 +22,30 @@ void iterate(vector<string>* paths, char* path){
 			if (strcmp(entry,"..") == 0 || strcmp(entry,".") == 0){
 				//cout << entry << endl;
 			} else {
-				/*
-				char tmp[] = "/";
-				char *slash = &tmp[0u];
-				
+				//add previous path
+				/*if (strcmp(path,".") == 0 || strcmp(path,"./") == 0 || strcmp(path,"..") == 0|| strcmp(path,"../")==0  ){
+					memset(path, 0, sizeof(path));
+				}*/
 				string buf(path);
-				buf.append("/");
+				if (buf.rfind(string(1,'/')) == string::npos || buf.rfind(string(1,'/')) != buf.length()-1){	
+					char tmp[] = "/";
+					char *slash = &tmp[0u];
+					buf.append("/");
+				}
 				buf.append(entry);
 				char *new_path = &buf[0u];
-				cout << new_path << endl;
 				iterate(paths, new_path);
-				*/
-				iterate(paths, entry);
+				
+				//iterate(paths, entry);
 			}
 		}
 	}
 	else if ((statbuf.st_mode & S_IFMT) == S_IFREG){
 		// it's a file
 		// open a file, append it to .ad file and close it
-		paths->push_back(path);
+		string p(path);
+		//paths->push_back(p.substr(p.find('/') + 1));
+		paths->push_back(p);
 	}
 	else{
 		cerr<<"Detected a path that is not a directory or a file"<<endl;
@@ -53,18 +58,17 @@ void store(char* file, char* path){
 	iterate(&paths, path);
 	mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
 	int to = creat(file, 00644);
-	// header	
+	// 1: header	
 	char empty_buff[SMALL_BUFF] = {0};
 	write(to, empty_buff, SMALL_BUFF);
 	int total = 0;
-	// files
+	// 2: files
 	for (int i=0; i<paths.size();i++){
-		//cout<<paths.at(i)<<endl;
 		int fr = open(paths.at(i).c_str(), O_RDONLY);
 		if (fr == -1){
 			cerr<<"Error opening the file: "<< paths.at(i)<<endl;
 		}
-		int n=0;
+		int n = 0;
 		int filesize = 0;
 		char buffer[LARGE_BUFF];
 		while ((n = read(fr, buffer, LARGE_BUFF)) > 0){
@@ -75,14 +79,36 @@ void store(char* file, char* path){
 		sizes.push_back(filesize);
 		close(fr);
 	}
-	// file info
+	// 3: file info
 	for (int i=0; i<sizes.size(); i++){
+		// path
 		string tmp = paths.at(i);
 		char *info = &tmp[0u];
 		write(to, info, SMALL_BUFF);
+		// filesize
 		tmp = to_string(sizes.at(i));
 		info = &tmp[0u];
 		write(to, info, SMALL_BUFF);
+		// owner, group, rights, type of file
+		struct stat statbuf;
+		tmp = paths.at(i);
+		info = &tmp[0u];
+		if (stat(info, &statbuf) == -1){
+			cerr << "Error: cannot get stats: " << paths.at(i) << endl;
+		}	
+		tmp = to_string(statbuf.st_uid);
+		info = &tmp[0u];
+		write(to, info, SMALL_BUFF);
+		tmp = to_string(statbuf.st_gid);
+		info = &tmp[0u];
+		write(to, info, SMALL_BUFF);
+		tmp = to_string(statbuf.st_mode & 111111111);
+		info = &tmp[0u];
+		write(to, info, SMALL_BUFF);
+		tmp = to_string(statbuf.st_mode & S_IFMT);
+		info = &tmp[0u];
+		write(to, info, SMALL_BUFF);
+		
 	}
 	// write back to header the total size of files
 	off_t new_pos;
