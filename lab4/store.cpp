@@ -1,3 +1,4 @@
+#include "variables.h"
 #include "store.h"
 using namespace std;
 

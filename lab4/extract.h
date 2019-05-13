@@ -10,6 +10,4 @@
 #include <unistd.h>
 #include <bits/stdc++.h> 
 
-#define SMALL_BUFF 100
-#define LARGE_BUFF 2048
 void extract(char* file, char* path, int num);

@@ -1,3 +1,4 @@
+#include "variables.h"
 #include "extract.h"
 using namespace std;
 

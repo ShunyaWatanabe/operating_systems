@@ -1,0 +1,2 @@
+#define SMALL_BUFF 100
+#define LARGE_BUFF 2048

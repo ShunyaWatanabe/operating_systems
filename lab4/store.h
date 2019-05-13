@@ -8,8 +8,6 @@
 #include <vector>
 #include <fcntl.h>
 #include <unistd.h>
-#define SMALL_BUFF 100
-#define LARGE_BUFF 2048
 
 void store(char* file, char* path);
 void append(char* file, char* path);
